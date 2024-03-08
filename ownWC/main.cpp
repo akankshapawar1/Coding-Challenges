@@ -1,36 +1,23 @@
 #include <iostream>
-#include <cstring>
 #include <string>
 #include <fstream>
+#include <regex>
 using namespace std;
 
-int matchCommand(int s, char com[]){
-    char c = com[6];
-    if (c == 'c'){
-        return 0;
-    }else if(c == 'l'){
-        return 1;
-    }else if(c == 'w'){
-        return 2;
-    }else if(c == 'm'){
-        return 3;
-    }
-    return 7;
-}
-
+// Read each line, get that line's size (returns length of the string in terms of bytes), add one byte for new line character
 void c(string fn){
     fstream file;
     string line;
     file.open(fn, ios::in);
-    if(!file){
-        cout << "File does not exist";
-    }else{
-        getline(file, line);
+    int size = 0;
+    while(getline(file, line)){
+        size = size + line.size() + 1;
     }
-    cout << line.size() << " " << fn;
+    cout << size << " ";
     file.close();
 }
 
+// while a file is being read, increment counter for each line
 void l(string fn){
     fstream file;
     string line;
@@ -39,10 +26,12 @@ void l(string fn){
     while (getline(file, line)){
         count++;
     }
-    cout << count << " " << fn;
+    cout << count << " ";
     file.close();
 }
 
+// Extraction operator >> skips whitespaces and reads until next whitespace.
+// a >> b is left to right. a's value is assigned to b.
 void w(string fn){
     fstream file;
     string word;
@@ -51,7 +40,7 @@ void w(string fn){
     while (file >> word){
         count++;
     }
-    cout << count << " " << fn;
+    cout << count << " ";
     file.close();
 }
 
@@ -63,70 +52,55 @@ void m(string fn){
     while(getline(file, lines)){
         count = count + lines.length() + 1;
     }
-    cout << count << " " << fn;
+    cout << count << " ";
     file.close();
-}
-
-// Avoid allocating array during run-time
-// void m(string fn){
-//     fstream file;
-//     string lines;
-//     int count = 0;
-//     file.open(fn, ios::in);
-//     while(getline(file, lines)){
-//         int si = lines.length();
-//         char arr[si];
-//         strcpy(arr, lines.c_str());
-//         int s = sizeof(arr) / sizeof(char);
-//         count = count + s;
-//     }
-//     cout << count << " " << fn;
-//     file.close();
-// }
-
-string matchFile(int s, char com[]){
-    int fileNameSize = s-8;
-    int count = 0;
-    char fileName[fileNameSize+1];
-    for(int i=8; i < s; i++){
-        fileName[count]=com[i];
-        count++;
-    }
-    fileName[fileNameSize+1] = '\0';
-    return fileName;
 }
 
 int main(){
     string command;
-    getline(cin, command);
-    int si = command.length();
-    char char_array[si+1];
-    strcpy(char_array, command.c_str());
-    int commandNum = matchCommand(si, char_array);
-    string fileName = "text";
-    fileName = matchFile(si, char_array);
-    string fileName2 = fileName.substr(0, fileName.size()-1);
-    switch (commandNum){
-        case 0:
-            c(fileName2);
-            break;
-        case 1:
-            l(fileName2);
-            break;
-        case 2:
-            w(fileName2);
-            break;
-        case 3:
-            m(fileName2);
-            break;
-        default:
-            cout << "Invalid";
-            break;
-    }
-    return 0;
-}
+    string ccwc = "ccwc";
+    string dash = "-";
+    string filename;
+    char flag = 'a';
+    int dashAt = -1;
+    regex e ("[a-zA-Z0-9]+\\.[a-zA-Z]+");
+    smatch matchedString;
 
-/*
-1. Check which command is being typed (first focus on c,l,w - which would be 6th element in the array)
-2. Check the file path
-*/
+    getline(cin, command);
+    regex_search(command, matchedString, e);
+    filename = matchedString.str(0);
+
+    if(command.find(ccwc) != std::string::npos){
+        dashAt = command.find(dash);
+        if(dashAt != -1){
+            flag = command[dashAt + 1];
+            switch (flag)
+            {
+            case 'l':
+                l(filename);
+                cout << filename;
+                break;
+            case 'c':
+                c(filename);
+                cout << filename;
+                break;
+            case 'm':
+                m(filename);
+                cout << filename;
+                break;
+            case 'w':
+                w(filename);
+                cout << filename;
+                break;
+            default:
+                break;
+            }
+        }else{
+            l(filename);
+            w(filename);
+            c(filename);
+            cout << filename;
+        }
+    }
+
+}
