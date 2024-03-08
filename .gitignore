@@ -3,3 +3,6 @@
 
 # Ignore class files
 ownWC/main
+
+# Ignore text files
+ownWC/*.txt
